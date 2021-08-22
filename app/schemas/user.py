@@ -1,12 +1,15 @@
-from typing import Optional
+from typing import Optional, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+
+from app.schemas.role import Role
 
 
 class UserBase(BaseModel):
     firstname: str
     lastname: str
     username: str
+    email: EmailStr
 
 
 class UserCreate(UserBase):
@@ -27,6 +30,7 @@ class UserInDB(UserBase):
 
 class UserUpdate(UserBase):
     password: Optional[str] = None
+    roles: List[Role]
 
 
 class UserUpdateDB(UserBase):

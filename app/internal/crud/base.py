@@ -51,7 +51,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     ) -> Optional[ModelType]:
         db_obj = db_obj or self.get(session, **kwargs)
         if db_obj is not None:
-            obj_data = db_obj.dict()
+            obj_data = db_obj.__dict__
             if isinstance(obj_in, dict):
                 update_data = obj_in
             else:
