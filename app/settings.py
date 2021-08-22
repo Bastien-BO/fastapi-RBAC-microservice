@@ -7,8 +7,8 @@ from app.schemas.settings import Environment
 
 
 class Settings(BaseSettings):
-    environment: Environment
-    sql_alchemy_database_url: str = "sql:///././sql_database.db"
+    environment: Environment = "development"
+    sql_alchemy_database_url: str = "sqlite:///././sql_database.db"
     token_generator_secret_key: str = secrets.token_hex(64)
     access_token_expire_minutes: int = 10
     refresh_token_expire_minutes: int = 30

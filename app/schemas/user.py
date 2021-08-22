@@ -1,10 +1,11 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
 class UserBase(BaseModel):
     firstname: str
     lastname: str
-    role_id: int
     username: str
 
 
@@ -12,18 +13,21 @@ class UserCreate(UserBase):
     password: str
 
 
-class User(UserBase):
+class UserOut(UserBase):
     id: int
-    is_active: bool
 
     class Config:
         orm_mode = True
 
 
-class UserVerify(UserBase):
-    id: int
-    is_active: bool
+class UserInDB(UserBase):
+    is_active: bool = True
     hashed_password: str
 
-    class Config:
-        orm_mode = True
+
+class UserUpdate(UserBase):
+    password: Optional[str] = None
+
+
+class UserUpdateDB(UserBase):
+    hashed_password: str

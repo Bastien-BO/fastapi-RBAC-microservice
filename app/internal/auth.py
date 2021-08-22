@@ -10,10 +10,10 @@ from passlib.context import CryptContext
 from starlette import status
 
 from app.db_config import get_db
-from app.internal.user import get_user_by_username
+from app.internal.crud.user import crud_user
 from app.models.user import User as UserModel
 from app.schemas.token import TokenData
-from app.schemas.user import User
+from app.schemas.user import UserOut
 from app.settings import get_settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -21,7 +21,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def authenticate_user(db: Session, username: str, password: str):
-    user: UserModel = get_user_by_username(db=db, username=username)
+    user: UserModel = crud_user.get(session=db, username=username)
     if not user:
         return False
     if not verify_password(db=db, password=password, password_hash=user.hashed_password):
@@ -65,13 +65,13 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user_by_username(db, username=token_data.username)
+    user = crud_user.get(session=db, username=token_data.username)
     if user is None:
         raise credentials_exception
     return user
 
 
-async def get_current_active_user(current_user: User = Depends(get_current_user)):
+async def get_current_active_user(current_user: UserOut = Depends(get_current_user)):
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="user is deactivated")
     return current_user

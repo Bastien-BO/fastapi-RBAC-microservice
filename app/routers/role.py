@@ -1,11 +1,10 @@
 from typing import List
 
 from fastapi import status, APIRouter, Depends, HTTPException
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.db_config import get_db
-from app.internal.role import get_all_roles, get_role_by_id, get_role_by_name, create_role, delete_all_roles, \
+from app.internal.crud.role import get_all_roles, get_role_by_id, get_role_by_name, create_role, delete_all_roles, \
     update_role
 from app.schemas.role import Role, RoleCreate
 

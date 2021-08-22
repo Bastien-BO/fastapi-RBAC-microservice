@@ -9,3 +9,5 @@ python-multipart~=0.0.5
 passlib~=1.7.4
 python-jose~=3.3.0
 jose~=1.0.0
+alembic~=1.6.5
+bcrypt~=3.2.0
