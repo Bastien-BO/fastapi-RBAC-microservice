@@ -7,10 +7,10 @@ from sqlalchemy.orm import Session
 
 from app.db_config import get_db
 from app.internal.auth import authenticate_user, create_access_token
-from app.internal.user import get_user_by_username
+from app.internal.crud.user import crud_user
 from app.schemas.renew_token import RenewToken
 from app.schemas.token import Token, TokenData
-from app.schemas.user import User
+from app.schemas.user import UserOut
 from app.settings import Settings, get_settings
 
 router = APIRouter(
@@ -55,7 +55,7 @@ async def refresh(renewtoken: RenewToken, db: Session = Depends(get_db), config:
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user: User = get_user_by_username(db=db, username=username)
+    user: UserOut = crud_user.get(session=db, username=token_data.username)
     if user is None or not user.is_active:
         raise credentials_exception
     access_token_expires = timedelta(minutes=get_settings().access_token_expire_minutes)

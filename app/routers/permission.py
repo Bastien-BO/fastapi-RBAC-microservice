@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from requests import Session
 
 from app.db_config import get_db
-from app.internal.permission import get_permission_by_id, get_all_permissions
+from app.internal.crud.permission import get_permission_by_id, get_all_permissions
 from app.schemas.permission import Permission, PermissionCreate
 
 router = APIRouter(

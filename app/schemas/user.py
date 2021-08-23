@@ -1,29 +1,37 @@
-from pydantic import BaseModel
+from typing import Optional, List
+
+from pydantic import BaseModel, EmailStr
+
+from app.schemas.role import Role
 
 
 class UserBase(BaseModel):
     firstname: str
     lastname: str
-    role_id: int
     username: str
+    email: EmailStr
 
 
 class UserCreate(UserBase):
     password: str
 
 
-class User(UserBase):
+class UserOut(UserBase):
     id: int
-    is_active: bool
 
     class Config:
         orm_mode = True
 
 
-class UserVerify(UserBase):
-    id: int
-    is_active: bool
+class UserInDB(UserBase):
+    is_active: bool = True
     hashed_password: str
 
-    class Config:
-        orm_mode = True
+
+class UserUpdate(UserBase):
+    password: Optional[str] = None
+    roles: List[Role]
+
+
+class UserUpdateDB(UserBase):
+    hashed_password: str
