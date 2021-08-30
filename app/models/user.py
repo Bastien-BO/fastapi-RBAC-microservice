@@ -19,6 +19,7 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     firstname = Column(String, nullable=False)
     lastname = Column(String, nullable=False)
-    hashed_password = Column(String)
+    email = Column(String, nullable=False)
+    hashed_password = Column(String, unique=True, nullable=False)
 
     roles = relationship("Role", secondary=user_role, backref=backref('users'))

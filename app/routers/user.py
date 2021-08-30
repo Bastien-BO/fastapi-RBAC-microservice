@@ -1,86 +1,95 @@
+from sqlalchemy.orm import Session
 from typing import List
 
-from fastapi import status, APIRouter, Depends, HTTPException
-from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
-
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from app.db_config import get_db
-from app.internal.auth import get_current_active_user
-from app.internal.user import get_user_by_id, get_all_users, create_user, delete_all_users, update_user, \
-    delete_user_by_id, get_user_by_username
-from app.schemas.user import User, UserCreate
-
-router = APIRouter(
-    prefix="/user",
-    tags=["user"],
-    responses={404: {"description": "not found"}},
-)
 
 
-@router.get("/all", response_model=List[User])
-def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return get_all_users(db=db, skip=skip, limit=limit)
+from app.internal.auth import get_password_hash, get_current_user
+from app.internal.crud.user import crud_user
+from app.models.user import User
+from app.schemas.user import UserCreate, UserInDB, UserOut, UserUpdate
+
+router = APIRouter(prefix="/user", tags=["User"])
 
 
-@router.get("/{id}", response_model=User)
-def get_user(id: int, db: Session = Depends(get_db)):
-    user_exception = HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"could not find job: {id}",
+@router.get("/", response_model=List[UserOut])
+async def read_users(offset: int = 0, limit: int = 100, session: Session = Depends(get_db)):
+    users = crud_user.get_multi(session, offset=offset, limit=limit)
+    return users
+
+
+@router.post("/", response_model=UserOut)
+async def create_user(
+    user_in: UserCreate, session: Session = Depends(get_db)
+):
+    user = crud_user.get(session, username=user_in.username)
+    if user is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="The user with this username already exists in the system",
+        )
+    obj_in = UserInDB(
+        **user_in.dict(), hashed_password=get_password_hash(user_in.password)
     )
-    user = get_user_by_id(db=db, id=id)
-    if user:
-        return user
-    else:
-        raise user_exception
+    return crud_user.create(session, obj_in)
 
 
-@router.post("", response_model=User)
-def post_user(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = get_user_by_username(db=db, username=user.username)
-    if db_user:
-        raise HTTPException(status_code=400, detail="User aleready registered")
-    else:
-        return create_user(db=db, user=user)
+@router.get("/{user_id}/", response_model=UserOut)
+async def read_user(
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_db),
+):
+    if current_user.id == user_id:
+        return current_user
+
+    user = crud_user.get(session, id=user_id)
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=403, detail="The user doesn't have enough privileges"
+        )
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
-@router.put("{id}", response_model=User)
-def put_user(user: User, db: Session = Depends(get_db)):
-    return update_user(db=db, user_put=user)
+@router.put("/{user_id}/", response_model=UserOut)
+async def update_user(
+    user_id: int, user_in: UserUpdate, session: Session = Depends(get_db)
+):
+    user = crud_user.get(session, id=user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="The user with this username does not exist in the system",
+        )
+    try:
+        user = crud_user.update(
+            session,
+            db_obj=user,
+            obj_in={
+                **user_in.dict(exclude={"password"}, exclude_none=True),
+                "hashed_password": get_password_hash(user_in.password),
+            },
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=409, detail="User with this username already exits"
+        )
+    return user
 
 
-@router.delete("{id}", response_model=User)
-def delete_user(id: int, db: Session = Depends(get_db)):
-    delete_user_by_id(id=id, db=db)
-    return JSONResponse(status_code=status.HTTP_200_OK)
-
-
-@router.delete("/all", response_model=User)
-def delete_users(db: Session = Depends(get_db)):
-    delete_all_users(db=db)
-    return JSONResponse(status_code=status.HTTP_200_OK)
-
-
-@router.get("/me", response_model=User)
-def read_user_me(current_user: User = Depends(get_current_active_user)):
-    return current_user
-
-
-@router.put("/{id}/deactivate", response_model=User)
-def deactivate_user(id: int, db: Session = Depends(get_db)):
-    db_user: User = get_user_by_id(db=db, id=id)
-    if not db_user:
-        raise HTTPException(status_code=400, detail="User do not exist")
-    else:
-        db_user.is_active = False
-        return update_user(db=db, user_put=db_user)
-
-
-@router.put("/{id}/activate", response_model=User)
-def deactivate_user(id: int, db: Session = Depends(get_db)):
-    db_user: User = get_user_by_id(db=db, id=id)
-    if not db_user:
-        raise HTTPException(status_code=400, detail="User do not exist")
-    else:
-        db_user.is_active = True
-        return update_user(db=db, user_put=db_user)
+@router.delete("/{user_id}/", status_code=204)
+async def delete_user(
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_db),
+):
+    user = crud_user.get(session, id=user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if current_user.id == user_id:
+        raise HTTPException(status_code=403, detail="User can't delete itself")
+    crud_user.delete(session, db_obj=user)

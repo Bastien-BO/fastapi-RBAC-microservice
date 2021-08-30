@@ -18,8 +18,8 @@ Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI(
-    title="SECURITY API",
-    description="The api that handle user authentification and their rights.",
+    title="RBAC API",
+    description="Role Base Access Control API to handle users, roles and permission",
     version="Bêta",
     debug=get_settings().api_debug,
 )
