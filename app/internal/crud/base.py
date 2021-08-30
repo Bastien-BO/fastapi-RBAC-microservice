@@ -51,11 +51,16 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     ) -> Optional[ModelType]:
         db_obj = db_obj or self.get(session, **kwargs)
         if db_obj is not None:
+            # compatibility for python<3.9
             obj_data = db_obj.__dict__
             if isinstance(obj_in, dict):
                 update_data = obj_in
             else:
-                update_data = obj_in.dict(exclude_unset=True)
+                # compatibility for python<3.9
+                update_data = obj_in.__dict__
+                for elem in update_data:
+                    if update_data[elem] is None or "":
+                        update_data.pop(elem)
             for field in obj_data:
                 if field in update_data:
                     setattr(db_obj, field, update_data[field])
