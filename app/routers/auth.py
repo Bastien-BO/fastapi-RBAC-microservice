@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 
-from app.db_config import get_db
+from app.database import get_db
 from app.internal.auth import authenticate_user, create_access_token
 from app.internal.crud.user import crud_user
 from app.schemas.renew_token import RenewToken

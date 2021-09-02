@@ -8,9 +8,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
 from app.routers.user import router as router_user
 from app.routers.startup import router as router_startup
+from app.routers.shutdown import router as router_shutdown
 from app.routers.permission import router as router_permission
+from app.routers.base import router as router_base
 from app.routers.role import router as router_role
 from app.routers.auth import router as router_auth
+from app.routers.healthcheck import router as router_healthcheck
 from app.settings import get_settings
 
 
@@ -33,6 +36,9 @@ app.add_middleware(
 )
 
 app.include_router(router_startup)
+app.include_router(router_shutdown)
+app.include_router(router_base)
+app.include_router(router_healthcheck)
 app.include_router(router_user)
 app.include_router(router_permission)
 app.include_router(router_role)
