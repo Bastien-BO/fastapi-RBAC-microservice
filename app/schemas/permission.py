@@ -9,8 +9,20 @@ class PermissionCreate(PermissionBase):
     pass
 
 
-class Permission(PermissionBase):
+class PermissionOut(PermissionBase):
     id: int
 
     class Config:
         orm_mode = True
+
+
+class PermissionInDB(PermissionBase):
+    pass
+
+
+class PermissionUpdate(PermissionBase):
+    pass
+
+
+class PermissionUpdateDB(PermissionBase):
+    pass

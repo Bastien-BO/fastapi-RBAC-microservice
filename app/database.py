@@ -7,3 +7,11 @@ engine = create_engine(get_settings().sql_alchemy_database_url, connect_args={"c
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
