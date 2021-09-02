@@ -3,6 +3,7 @@
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi_health import health
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
@@ -13,7 +14,8 @@ from app.routers.permission import router as router_permission
 from app.routers.base import router as router_base
 from app.routers.role import router as router_role
 from app.routers.auth import router as router_auth
-from app.routers.healthcheck import router as router_healthcheck
+from app.routers.healthcheck_heroku import router as router_healthcheck_heroku
+from app.routers.health import router as router_health
 from app.settings import get_settings
 
 
@@ -38,11 +40,13 @@ app.add_middleware(
 app.include_router(router_startup)
 app.include_router(router_shutdown)
 app.include_router(router_base)
-app.include_router(router_healthcheck)
+app.include_router(router_health)
+app.include_router(router_healthcheck_heroku)
 app.include_router(router_user)
 app.include_router(router_permission)
 app.include_router(router_role)
 app.include_router(router_auth)
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=5000, log_level="info")
