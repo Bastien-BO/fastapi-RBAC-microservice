@@ -1,12 +1,11 @@
 from typing import List
 
-from fastapi import status, APIRouter, Depends
-from fastapi.responses import JSONResponse
+from fastapi import status, APIRouter, Depends, HTTPException
 from requests import Session
 
-from app.db_config import get_db
-from app.internal.crud.permission import get_permission_by_id, get_all_permissions
-from app.schemas.permission import Permission, PermissionCreate
+from app.database import get_db
+from app.internal.crud.permission import crud_permission
+from app.schemas.permission import PermissionCreate, PermissionOut, PermissionUpdate
 
 router = APIRouter(
     prefix="/permission",
@@ -15,31 +14,58 @@ router = APIRouter(
 )
 
 
-@router.get("/all", response_model=List[Permission])
-def get_permissions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return get_all_permissions(db=db, skip=skip, limit=limit)
+@router.get("/", response_model=List[PermissionOut])
+def get_permission(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud_permission.get_multi(session=db, skip=skip, limit=limit)
 
 
-@router.get("/{idi}", response_model=Permission)
-def get_permission(idi: int, db: Session = Depends(get_db)):
-    return get_permission_by_id(db=db, id=idi)
+@router.get("/{id_permission}", response_model=PermissionOut)
+def get_permission(id_permission: int, db: Session = Depends(get_db)):
+    permission_exception = HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"could not find Permission: {id_permission}",
+    )
+    permission = crud_permission.get(session=db, id=id_permission)
+
+    if permission:
+        return permission
+    else:
+        raise permission_exception
 
 
-@router.post("", response_model=Permission)
-def post_permission(permission: PermissionCreate):
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content="")
+@router.post("/", response_model=PermissionOut)
+def post_permission(permission: PermissionCreate, db: Session = Depends(get_db)):
+    permission_exception = HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Permission {permission.name} already exist",
+    )
+    permission_db = crud_permission.get(session=db, name=permission.name)
+
+    if permission_db:
+        return permission_exception
+    else:
+        return crud_permission.create(session=db, Permission=permission)
 
 
-@router.put("{id}", response_model=Permission)
-def put_permission(id: int):
-    return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content="")
+@router.put("/{id_permission}", response_model=PermissionOut)
+def put_permission(id_permission: int, permission_in: PermissionUpdate, db: Session = Depends(get_db)):
+    db_permission: PermissionOut = crud_permission.get(session=db, id=id_permission)
+
+    if not db_permission:
+        raise HTTPException(status_code=400, detail=f"Permission {db_permission.name} do not exist")
+    else:
+        return crud_permission.update(session=db, db_obj=db_permission, obj_in=permission_in)
 
 
-@router.delete("/all", response_model=Permission)
-def delete_permissions():
-    return JSONResponse(status_code=status.HTTP_200_OK)
+@router.delete("/{id_permission}", response_model=PermissionOut)
+def delete_permission(id_permission: int, db: Session = Depends(get_db)):
+    permission_exception = HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"could not find Permission: {id_permission}",
+    )
+    permission = crud_permission.get(session=db, id=id_permission)
 
-
-@router.delete("{id}", response_model=Permission)
-def delete_permission(id: int):
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    if permission:
+        return crud_permission.delete(session=db, db_obj=permission)
+    else:
+        raise permission_exception

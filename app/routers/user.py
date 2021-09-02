@@ -3,9 +3,8 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
-from app.db_config import get_db
 
-
+from app.database import get_db
 from app.internal.auth import get_password_hash, get_current_user
 from app.internal.crud.user import crud_user
 from app.models.user import User

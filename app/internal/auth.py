@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from starlette import status
+from fastapi import status
 
-from app.db_config import get_db
+from app.database import get_db
 from app.internal.crud.user import crud_user
 from app.models.user import User as UserModel
 from app.schemas.token import TokenData
