@@ -1,13 +1,14 @@
 from fastapi import APIRouter, status
 
 router = APIRouter(
-    tags=["base"],
+    tags=["healthcheck"],
+
     responses={404: {"description": "not found"}},
 )
 
 
 @router.get('/healthcheck', status_code=status.HTTP_200_OK)
-def perform_healthcheck():
+def perform_healthcheck_heroku():
     """
     Simple route for the GitHub Actions to healthcheck on.
     More info is available at:
