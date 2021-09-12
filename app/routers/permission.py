@@ -5,7 +5,7 @@ from requests import Session
 
 from app.database import get_db
 from app.internal.crud.permission import crud_permission
-from app.schemas.permission import PermissionCreate, PermissionOut, PermissionUpdate
+from app.schemas.permission import PermissionCreate, Permission, PermissionUpdate
 
 router = APIRouter(
     prefix="/permission",
@@ -14,12 +14,12 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[PermissionOut])
+@router.get("/", response_model=List[Permission])
 def get_permission(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud_permission.get_multi(session=db, skip=skip, limit=limit)
+    return crud_permission.get_multi(session=db, offset=skip, limit=limit)
 
 
-@router.get("/{id_permission}", response_model=PermissionOut)
+@router.get("/{id_permission}", response_model=Permission)
 def get_permission(id_permission: int, db: Session = Depends(get_db)):
     permission_exception = HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -33,7 +33,7 @@ def get_permission(id_permission: int, db: Session = Depends(get_db)):
         raise permission_exception
 
 
-@router.post("/", response_model=PermissionOut)
+@router.post("/", response_model=Permission)
 def post_permission(permission: PermissionCreate, db: Session = Depends(get_db)):
     permission_exception = HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -47,9 +47,9 @@ def post_permission(permission: PermissionCreate, db: Session = Depends(get_db))
         return crud_permission.create(session=db, Permission=permission)
 
 
-@router.put("/{id_permission}", response_model=PermissionOut)
+@router.put("/{id_permission}", response_model=Permission)
 def put_permission(id_permission: int, permission_in: PermissionUpdate, db: Session = Depends(get_db)):
-    db_permission: PermissionOut = crud_permission.get(session=db, id=id_permission)
+    db_permission: Permission = crud_permission.get(session=db, id=id_permission)
 
     if not db_permission:
         raise HTTPException(status_code=400, detail=f"Permission {db_permission.name} do not exist")
@@ -57,7 +57,7 @@ def put_permission(id_permission: int, permission_in: PermissionUpdate, db: Sess
         return crud_permission.update(session=db, db_obj=db_permission, obj_in=permission_in)
 
 
-@router.delete("/{id_permission}", response_model=PermissionOut)
+@router.delete("/{id_permission}", response_model=Permission)
 def delete_permission(id_permission: int, db: Session = Depends(get_db)):
     permission_exception = HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,

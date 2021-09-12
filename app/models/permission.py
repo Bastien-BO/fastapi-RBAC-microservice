@@ -1,20 +1,13 @@
-from sqlalchemy import Column, Integer, String, Table, PrimaryKeyConstraint, ForeignKey
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import backref, relationship
 
 from app.database import Base
-
-role_permission = Table(
-    'role_permission',
-    Base.metadata,
-    Column('permission_id', Integer, ForeignKey('permissions.id')),
-    Column('role_id', Integer, ForeignKey('roles.id')),
-    PrimaryKeyConstraint('permission_id', 'role_id')
-)
+from app.models.role_permission import role_permission
 
 
 class Permission(Base):
-    __tablename__ = 'permissions'
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    __tablename__ = 'permission'
+    id = Column(Integer, autoincrement=True, primary_key=True)
     name = Column(String(100), nullable=False, unique=True)
 
-    roles = relationship("Role", secondary=role_permission, backref=backref('permissions'))
+    roles = relationship("Role", secondary=role_permission, backref=backref('permissions', lazy=True), lazy='subquery')
