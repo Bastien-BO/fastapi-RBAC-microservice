@@ -42,9 +42,9 @@ def post_permission(permission: PermissionCreate, db: Session = Depends(get_db))
     permission_db = crud_permission.get(session=db, name=permission.name)
 
     if permission_db:
-        return permission_exception
+        raise permission_exception
     else:
-        return crud_permission.create(session=db, Permission=permission)
+        return crud_permission.create(session=db, obj_in=permission)
 
 
 @router.put("/{id_permission}", response_model=Permission)

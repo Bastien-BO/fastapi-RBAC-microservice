@@ -29,7 +29,7 @@ def add_base_user(session: Session, role: str) -> None:
 def main() -> None:
     logger.info("Creating inital data")
     with SessionLocal() as session:
-        add_crud_permissions(session=session, basic_permission_list=["permission", "", ""])
+        add_crud_permissions(session=session, basic_permission_list=["permission", "role", "user"])
         add_base_user(session=session, role="super_admin")
     logger.info("Initial data created")
 
