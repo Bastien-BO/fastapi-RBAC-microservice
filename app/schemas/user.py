@@ -2,7 +2,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr
 
-from app.schemas.role import RoleOut
+from app.schemas.role import Role
 
 
 class UserBase(BaseModel):
@@ -31,7 +31,7 @@ class UserInDB(UserBase):
 
 class UserUpdate(UserBase):
     password: Optional[str] = None
-    roles: List[RoleOut]
+    roles: List[Role]
 
 
 class UserUpdateDB(UserBase):

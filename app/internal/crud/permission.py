@@ -1,6 +1,6 @@
 from app.internal.crud.base import CRUDBase
-from app.models.permission import Permission
-from app.schemas.permission import PermissionInDB, PermissionUpdateDB
+from app.models.permission import Permission as PermissionModel
+from app.schemas.permission import PermissionCreate, PermissionUpdate
 
-CRUDPermission = CRUDBase[Permission, PermissionInDB, PermissionUpdateDB]
-crud_permission = CRUDBase(Permission)
+CRUDPermission = CRUDBase[PermissionModel, PermissionCreate, PermissionUpdate]
+crud_permission = CRUDBase(PermissionModel)

@@ -1,4 +1,8 @@
+from typing import List
+
 from pydantic import BaseModel
+
+from app.schemas.role import Role
 
 
 class PermissionBase(BaseModel):
@@ -6,23 +10,16 @@ class PermissionBase(BaseModel):
 
 
 class PermissionCreate(PermissionBase):
-    pass
-
-
-class PermissionOut(PermissionBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-
-
-class PermissionInDB(PermissionBase):
-    pass
+    roles: List[Role] = []
 
 
 class PermissionUpdate(PermissionBase):
-    pass
+    roles: List[Role] = []
 
 
-class PermissionUpdateDB(PermissionBase):
-    pass
+class Permission(PermissionBase):
+    id: int
+    roles: List[Role] = []
+
+    class Config:
+        orm_mode = True

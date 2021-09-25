@@ -1,19 +1,39 @@
+import logging
+from typing import List
+
 from sqlalchemy.orm import Session
 
-"""
-Add support for environment role settings
-Need total refactor
-"""
+from app.database import SessionLocal
+from app.internal.crud.permission import crud_permission
+from app.schemas.permission import PermissionCreate
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-"""
-def add_basic_permission(db: Session):
-    crud = ["get", "add", "delete", "put"]
-    model = ["user", "role", "permission"]
-    for x in range(0, len(crud)):
-        for y in range(0, len(model)):
-            permission = PermissionCreate(name=crud[x] + "_" + model[y])
-            user = get_permission_by_name(db=db, name=crud[x] + "_" + model[y])
-            if not user:
-                create_permission(db=db, permission=permission)
-"""
+def add_crud_permissions(session: Session, basic_permission_list: List[str]) -> None:
+    crud_list: List[str] = ["create", "read", "update", "delete"]
+    for crud in crud_list:
+        for permission in basic_permission_list:
+            perm: PermissionCreate = PermissionCreate(name=crud + "_" + permission)
+            print(perm.name)
+            if not crud_permission.get(session=session, name=perm.name):  # soucis ici
+                print(perm)
+                crud_permission.create(session=session, obj_in=perm)
+                logger.info("Permission" + crud + "_" + permission + " created!")
+
+
+def add_base_user(session: Session, role: str) -> None:
+    pass
+
+
+def main() -> None:
+    logger.info("Creating inital data")
+    with SessionLocal() as session:
+        add_crud_permissions(session=session, basic_permission_list=["permission", "role", "user"])
+        add_base_user(session=session, role="super_admin")
+    logger.info("Initial data created")
+
+
+if __name__ == "__main__":
+    main()
