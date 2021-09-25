@@ -8,7 +8,7 @@ router = APIRouter(
 
 
 @router.get('/healthcheck', status_code=status.HTTP_200_OK)
-def perform_healthcheck_heroku():
+def perform_heroku_healthcheck():
     """
     Simple route for the GitHub Actions to healthcheck on.
     More info is available at:

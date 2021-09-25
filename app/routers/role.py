@@ -40,15 +40,14 @@ def post_permission(role: RoleCreate, db: Session = Depends(get_db)):
         detail=f"role {role.name} already exist",
     )
     role_db = crud_role.get(session=db, name=role.name)
-
     if role_db:
-        return role_exception
+        raise role_exception
     else:
-        return crud_role.create(session=db, role=role)
+        return crud_role.create(session=db, obj_in=role)
 
 
 @router.put("/{id_role}", response_model=Role)
-def put_role(id_role: int, role_in: RoleUpdate, db: Session = Depends(get_db)):
+def update_role(id_role: int, role_in: RoleUpdate, db: Session = Depends(get_db)):
     db_role: Role = crud_role.get(session=db, id=id_role)
 
     if not db_role:
@@ -66,6 +65,6 @@ def delete_role(id_role: int, db: Session = Depends(get_db)):
     role = crud_role.get(session=db, id=id_role)
 
     if role:
-        return crud_role.delete(session=db,db_obj=role)
+        return crud_role.delete(session=db, db_obj=role)
     else:
         raise role_exception

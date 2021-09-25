@@ -16,7 +16,8 @@ def add_crud_permissions(session: Session, basic_permission_list: List[str]) -> 
     for crud in crud_list:
         for permission in basic_permission_list:
             perm: PermissionCreate = PermissionCreate(name=crud + "_" + permission)
-            if not crud_permission.get(session=session, name=permission):  # soucis ici
+            print(perm.name)
+            if not crud_permission.get(session=session, name=perm.name):  # soucis ici
                 print(perm)
                 crud_permission.create(session=session, obj_in=perm)
                 logger.info("Permission" + crud + "_" + permission + " created!")
@@ -29,7 +30,7 @@ def add_base_user(session: Session, role: str) -> None:
 def main() -> None:
     logger.info("Creating inital data")
     with SessionLocal() as session:
-        add_crud_permissions(session=session, basic_permission_list=["permission", "", ""])
+        add_crud_permissions(session=session, basic_permission_list=["permission", "role", "user"])
         add_base_user(session=session, role="super_admin")
     logger.info("Initial data created")
 

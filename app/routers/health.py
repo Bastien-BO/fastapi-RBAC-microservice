@@ -10,5 +10,5 @@ router = APIRouter(
 
 
 @router.get('/health', status_code=status.HTTP_200_OK)
-def perform_healthcheck_of_api(health_endpoint=Depends(health([healthy_condition, sick_condition]))):
+def perform_api_healthcheck(health_endpoint=Depends(health([healthy_condition, sick_condition]))):
     return health_endpoint

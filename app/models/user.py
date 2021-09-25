@@ -15,4 +15,4 @@ class User(Base):
     email = Column(String, nullable=False)
     hashed_password = Column(String, unique=True, nullable=False)
 
-    roles = relationship("Role", secondary=user_role, backref=backref('users', lazy=True), lazy='subquery')
+    roles = relationship("Role", secondary=user_role, backref=backref('user', lazy=True), lazy='subquery')

@@ -2,10 +2,13 @@ from typing import List
 
 from fastapi import status, APIRouter, Depends, HTTPException
 from requests import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.database import get_db
 from app.internal.crud.permission import crud_permission
+from app.internal.crud.role import crud_role
 from app.schemas.permission import PermissionCreate, Permission, PermissionUpdate
+from app.schemas.role import Role
 
 router = APIRouter(
     prefix="/permission",
@@ -35,26 +38,62 @@ def get_permission(id_permission: int, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=Permission)
 def post_permission(permission: PermissionCreate, db: Session = Depends(get_db)):
-    permission_exception = HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Permission {permission.name} already exist",
-    )
     permission_db = crud_permission.get(session=db, name=permission.name)
 
     if permission_db:
-        return permission_exception
-    else:
-        return crud_permission.create(session=db, Permission=permission)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Permission {permission.name} already exist",
+        )
+    try:
+        permission_create: PermissionCreate = PermissionCreate(name=permission.name)
+        for nb in range(0, len(permission.roles)):
+            role_found: Role = crud_role.get(session=db, id=permission.roles[nb].id)
+            if role_found:
+                permission_create.roles.append(role_found)
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"Unable to find role {permission.roles[nb].id}"
+                )
+        return crud_permission.create(session=db, obj_in=permission_create)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Unable to create permission"
+        )
 
 
 @router.put("/{id_permission}", response_model=Permission)
-def put_permission(id_permission: int, permission_in: PermissionUpdate, db: Session = Depends(get_db)):
-    db_permission: Permission = crud_permission.get(session=db, id=id_permission)
-
-    if not db_permission:
-        raise HTTPException(status_code=400, detail=f"Permission {db_permission.name} do not exist")
-    else:
-        return crud_permission.update(session=db, db_obj=db_permission, obj_in=permission_in)
+def update_permission(id_permission: int, permission_in: PermissionUpdate, db: Session = Depends(get_db)):
+    db_permission = crud_permission.get(session=db, id=id_permission)
+    if db_permission is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Permission id:{id_permission} do not exist"
+        )
+    try:
+        permission_update = PermissionUpdate(name=permission_in.name)
+        for nb in range(0, len(permission_in.roles)):
+            role_found = crud_role.get(session=db, id=permission_in.roles[nb].id)
+            if role_found:
+                permission_update.roles.append(role_found)
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"Unable to find role {permission_in.roles[nb].id}"
+                )
+        return crud_permission.update(
+            session=db,
+            db_obj=db_permission,
+            obj_in=permission_update
+        )
+        # return crud_permission.create(session=db, obj_in=permission_create)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Unable to update permission"
+        )
 
 
 @router.delete("/{id_permission}", response_model=Permission)

@@ -10,7 +10,7 @@ class PermissionBase(BaseModel):
 
 
 class PermissionCreate(PermissionBase):
-    pass
+    roles: List[Role] = []
 
 
 class PermissionUpdate(PermissionBase):
