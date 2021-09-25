@@ -16,7 +16,8 @@ def add_crud_permissions(session: Session, basic_permission_list: List[str]) -> 
     for crud in crud_list:
         for permission in basic_permission_list:
             perm: PermissionCreate = PermissionCreate(name=crud + "_" + permission)
-            if not crud_permission.get(session=session, name=permission):  # soucis ici
+            print(perm.name)
+            if not crud_permission.get(session=session, name=perm.name):  # soucis ici
                 print(perm)
                 crud_permission.create(session=session, obj_in=perm)
                 logger.info("Permission" + crud + "_" + permission + " created!")

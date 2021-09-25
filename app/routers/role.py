@@ -47,7 +47,7 @@ def post_permission(role: RoleCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{id_role}", response_model=Role)
-def put_role(id_role: int, role_in: RoleUpdate, db: Session = Depends(get_db)):
+def update_role(id_role: int, role_in: RoleUpdate, db: Session = Depends(get_db)):
     db_role: Role = crud_role.get(session=db, id=id_role)
 
     if not db_role:
