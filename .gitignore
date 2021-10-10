@@ -2,11 +2,16 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+.idea/
+main.build/
+*.db
 # C extensions
 *.so
+*.c
+*.const
 # Prerequisites
 *.d
+*.h
 
 # Object files
 *.o
