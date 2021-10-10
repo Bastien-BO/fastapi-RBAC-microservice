@@ -1,5 +1,5 @@
 pep8
-fastapi~=0.68.0
+fastapi~=0.70.0
 uvicorn~=0.14.0
 pydantic[dotenv,email]~=1.8.2
 SQLAlchemy~=1.4.22
@@ -9,6 +9,6 @@ python-multipart~=0.0.5
 passlib~=1.7.4
 python-jose~=3.3.0
 jose~=1.0.0
-alembic~=1.6.5
+alembic~=1.7.4
 bcrypt~=3.2.0
 fastapi_health~=0.4.0
