@@ -1,14 +1,16 @@
-from fastapi import APIRouter, status
+"""
+Route for health check specific to Heroku
+"""
+from fastapi import APIRouter
+from fastapi import status
 
 router = APIRouter(
     tags=["healthcheck"],
-
-    responses={404: {"description": "not found"}},
 )
 
 
-@router.get('/healthcheck', status_code=status.HTTP_200_OK)
-def perform_heroku_healthcheck():
+@router.get("/healthcheck", status_code=status.HTTP_200_OK)
+def perform_heroku_healthcheck() -> dict:
     """
     Simple route for the GitHub Actions to healthcheck on.
     More info is available at:
@@ -23,4 +25,4 @@ def perform_heroku_healthcheck():
       'healtcheck': 'Everything OK!'
     }
     """
-    return {'healthcheck': 'Everything OK!'}
+    return {"healthcheck": "Everything OK!"}

@@ -1,20 +1,32 @@
+"""
+All routes for User
+"""
 from sqlalchemy.orm import Session
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter
+from fastapi import Depends
+from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
+from starlette import status
 
 from app.database import get_db
-from app.internal.auth import get_password_hash, get_current_user
+from app.internal.auth import get_current_user
+from app.internal.auth import get_password_hash
 from app.internal.crud.user import crud_user
 from app.models.user import User
-from app.schemas.user import UserCreate, UserInDB, UserOut, UserUpdate
+from app.schemas.user import UserCreate
+from app.schemas.user import UserInDB
+from app.schemas.user import UserOut
+from app.schemas.user import UserUpdate
 
 router = APIRouter(prefix="/user", tags=["User"])
 
 
 @router.get("/", response_model=List[UserOut])
-async def read_users(offset: int = 0, limit: int = 100, session: Session = Depends(get_db)):
+async def read_users(
+    offset: int = 0, limit: int = 100, session: Session = Depends(get_db)
+) -> List[UserOut]:
     users = crud_user.get_multi(session, offset=offset, limit=limit)
     return users
 
@@ -22,7 +34,7 @@ async def read_users(offset: int = 0, limit: int = 100, session: Session = Depen
 @router.post("/", response_model=UserOut)
 async def create_user(
     user_in: UserCreate, session: Session = Depends(get_db)
-):
+) -> UserOut:
     user = crud_user.get(session, username=user_in.username)
     if user is not None:
         raise HTTPException(
@@ -40,7 +52,7 @@ async def read_user(
     user_id: int,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_db),
-):
+) -> UserOut:
     if current_user.id == user_id:
         return current_user
 
@@ -54,10 +66,10 @@ async def read_user(
     return user
 
 
-@router.put("/{user_id}/", response_model=UserOut)
+@router.patch("/{user_id}/", response_model=UserOut)
 async def update_user(
     user_id: int, user_in: UserUpdate, session: Session = Depends(get_db)
-):
+) -> UserOut:
     user = crud_user.get(session, id=user_id)
     if user is None:
         raise HTTPException(
@@ -80,12 +92,12 @@ async def update_user(
     return user
 
 
-@router.delete("/{user_id}/", status_code=204)
+@router.delete("/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
     user_id: int,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_db),
-):
+) -> status.HTTP_204_NO_CONTENT:
     user = crud_user.get(session, id=user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
