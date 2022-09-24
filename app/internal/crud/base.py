@@ -14,9 +14,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType]) -> None:
         self._model = model
 
-    def create(
-        self, session: Session, obj_in: CreateSchemaType
-    ) -> ModelType:
+    def create(self, session: Session, obj_in: CreateSchemaType) -> ModelType:
         obj_in_data = dict(obj_in)
         db_obj = self._model(**obj_in_data)
         session.add(db_obj)
@@ -30,7 +28,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return result.scalars().first()
 
     def get_multi(
-        self, session: Session, *args, offset: int = 0, limit: int = 100, **kwargs
+        self,
+        session: Session,
+        *args,
+        offset: int = 0,
+        limit: int = 100,
+        **kwargs
     ) -> List[ModelType]:
         result = session.execute(
             select(self._model)
@@ -69,7 +72,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     def delete(
-        self, session: Session, *args, db_obj: Optional[ModelType] = None, **kwargs
+        self,
+        session: Session,
+        *args,
+        db_obj: Optional[ModelType] = None,
+        **kwargs
     ) -> ModelType:
         db_obj = db_obj or self.get(session, *args, **kwargs)
         session.delete(db_obj)

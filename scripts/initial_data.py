@@ -1,3 +1,6 @@
+"""
+Add basics permissions and roles
+"""
 import logging
 from typing import List
 
@@ -6,7 +9,6 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.internal.crud.permission import crud_permission
 from app.schemas.permission import PermissionCreate
-from app.settings import get_settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

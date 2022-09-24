@@ -24,7 +24,9 @@ def authenticate_user(db: Session, username: str, password: str):
     user: UserModel = crud_user.get(session=db, username=username)
     if not user:
         return False
-    if not verify_password(db=db, password=password, password_hash=user.hashed_password):
+    if not verify_password(
+        db=db, password=password, password_hash=user.hashed_password
+    ):
         return False
     return user
 
@@ -47,18 +49,26 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, get_settings().token_generator_secret_key, algorithm="HS256")
+    encoded_jwt = jwt.encode(
+        to_encode, get_settings().token_generator_secret_key, algorithm="HS256"
+    )
     return encoded_jwt
 
 
-async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+async def get_current_user(
+    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, get_settings().token_generator_secret_key, algorithms=["HS256"])
+        payload = jwt.decode(
+            token,
+            get_settings().token_generator_secret_key,
+            algorithms=["HS256"],
+        )
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -71,7 +81,9 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
     return user
 
 
-async def get_current_active_user(current_user: UserOut = Depends(get_current_user)):
+async def get_current_active_user(
+    current_user: UserOut = Depends(get_current_user),
+):
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="user is deactivated")
     return current_user
