@@ -5,7 +5,7 @@ import uvicorn
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi_responses import custom_openapi
 
 from app.database import Base, engine
 from app.routers.auth import router as router_auth
@@ -28,6 +28,8 @@ app = FastAPI(
     title="RBAC API",
     version="Bêta",
 )
+
+app.openapi = custom_openapi(app)
 
 app.add_middleware(
     CORSMiddleware,

@@ -8,6 +8,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 
 from app.database import get_db
 from app.internal.crud.role import crud_role
@@ -41,7 +42,7 @@ def get_role(id_role: int, db: Session = Depends(get_db)) -> Role:
     if role:
         return role
     else:
-        raise HTTPException(404, f"could not find role: {id_role}")
+        raise HTTPException(HTTP_404_NOT_FOUND, f"could not find role: {id_role}")
 
 
 @router.post("/", response_model=Role)
@@ -51,7 +52,7 @@ def post_permission(role: RoleCreate, db: Session = Depends(get_db)) -> Role:
     """
     role_db = crud_role.get(session=db, name=role.name)
     if role_db:
-        raise HTTPException(404, f"role {role.name} already exist")
+        raise HTTPException(HTTP_404_NOT_FOUND, f"role {role.name} already exist")
     else:
         return crud_role.create(session=db, obj_in=role)
 
@@ -66,7 +67,7 @@ def update_role(
     db_role: Role = crud_role.get(session=db, id=id_role)
     if not db_role:
         raise HTTPException(
-            status_code=400, detail=f"role {db_role.name} do not exist"
+            status_code=HTTP_400_BAD_REQUEST, detail=f"role {db_role.name} do not exist"
         )
     else:
         return crud_role.update(session=db, db_obj=db_role, obj_in=role_in)
@@ -75,7 +76,7 @@ def update_role(
 @router.delete("/{id_role}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_role(
     id_role: int, db: Session = Depends(get_db)
-) -> status.HTTP_204_NO_CONTENT:
+):
     """
     Delete a Role
     """
@@ -84,4 +85,4 @@ def delete_role(
     if role:
         crud_role.delete(session=db, db_obj=role)
     else:
-        raise HTTPException(404, f"could not find role: {id_role}")
+        raise HTTPException(HTTP_404_NOT_FOUND, f"could not find role: {id_role}")

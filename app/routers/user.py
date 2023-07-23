@@ -9,6 +9,7 @@ from fastapi import Depends
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from starlette import status
+from starlette.status import HTTP_409_CONFLICT, HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
 
 from app.database import get_db
 from app.internal.auth import get_current_user
@@ -38,11 +39,11 @@ async def create_user(
     user = crud_user.get(session, username=user_in.username)
     if user is not None:
         raise HTTPException(
-            status_code=409,
+            status_code=HTTP_409_CONFLICT,
             detail="The user with this username already exists in the system",
         )
     obj_in = UserInDB(
-        **user_in.dict(), hashed_password=get_password_hash(user_in.password)
+        **user_in.model_dump(), hashed_password=get_password_hash(user_in.password)
     )
     return crud_user.create(session, obj_in)
 
@@ -59,10 +60,10 @@ async def read_user(
     user = crud_user.get(session, id=user_id)
     if not current_user.is_superuser:
         raise HTTPException(
-            status_code=403, detail="The user doesn't have enough privileges"
+            status_code=HTTP_403_FORBIDDEN, detail="The user doesn't have enough privileges"
         )
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
     return user
 
 
@@ -73,7 +74,7 @@ async def update_user(
     user = crud_user.get(session, id=user_id)
     if user is None:
         raise HTTPException(
-            status_code=404,
+            status_code=HTTP_404_NOT_FOUND,
             detail="The user with this username does not exist in the system",
         )
     try:
@@ -81,13 +82,13 @@ async def update_user(
             session,
             db_obj=user,
             obj_in={
-                **user_in.dict(exclude={"password"}, exclude_none=True),
+                **user_in.model_dump(exclude={"password"}, exclude_none=True),
                 "hashed_password": get_password_hash(user_in.password),
             },
         )
     except IntegrityError:
         raise HTTPException(
-            status_code=409, detail="User with this username already exits"
+            status_code=HTTP_409_CONFLICT, detail="User with this username already exits"
         )
     return user
 
@@ -97,10 +98,10 @@ async def delete_user(
     user_id: int,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_db),
-) -> status.HTTP_204_NO_CONTENT:
+):
     user = crud_user.get(session, id=user_id)
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
     if current_user.id == user_id:
-        raise HTTPException(status_code=403, detail="User can't delete itself")
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="User can't delete itself")
     crud_user.delete(session, db_obj=user)

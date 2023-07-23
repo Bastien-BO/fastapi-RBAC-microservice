@@ -21,5 +21,5 @@ class Permission(PermissionBase):
     id: int
     roles: List[Role] = []
 
-    class Config:
-        orm_mode = True
+    class ConfigDict:
+        from_attributes = True
