@@ -16,5 +16,5 @@ class RoleUpdate(RoleBase):
 class Role(RoleBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    class ConfigDict:
+        from_attributes = True

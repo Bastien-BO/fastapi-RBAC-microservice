@@ -20,8 +20,8 @@ class UserOut(UserBase):
     id: int
     is_active: bool
 
-    class Config:
-        orm_mode = True
+    class ConfigDict:
+        from_attributes = True
 
 
 class UserInDB(UserBase):

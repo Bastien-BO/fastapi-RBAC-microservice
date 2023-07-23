@@ -1,7 +1,7 @@
 import secrets
 from functools import lru_cache
 
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 from app.schemas.settings import Environment
 
@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     sql_alchemy_database_url: str = "sqlite:///././sql_database.db"
     token_generator_secret_key: str = secrets.token_hex(64)
 
-    class Config:
+    class ConfigDict:
         env_file = ".env"
         env_file_encoding = "utf-8"
         use_enum_values = True

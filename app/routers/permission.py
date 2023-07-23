@@ -9,6 +9,7 @@ from fastapi import HTTPException
 from fastapi import status
 from requests import Session
 from sqlalchemy.exc import IntegrityError
+from starlette.status import HTTP_404_NOT_FOUND
 
 from app.database import get_db
 from app.internal.crud.permission import crud_permission
@@ -121,7 +122,7 @@ def update_permission(
 @router.delete("/{id_permission}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_permission(
     id_permission: int, db: Session = Depends(get_db)
-) -> status.HTTP_204_NO_CONTENT:
+):
 
     permission = crud_permission.get(session=db, id=id_permission)
 
@@ -129,6 +130,6 @@ def delete_permission(
         crud_permission.delete(session=db, db_obj=permission)
     else:
         raise HTTPException(
-            404,
+            HTTP_404_NOT_FOUND,
             f"could not find Permission: {id_permission}",
         )
